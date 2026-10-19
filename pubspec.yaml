@@ -1,0 +1,42 @@
+name: dompetku
+description: Aplikasi Keuangan Pribadi Offline
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Database
+  sqflite: ^2.3.3
+  path: ^1.9.0
+  
+  # State Management
+  provider: ^6.1.2
+  
+  # Local Storage
+  shared_preferences: ^2.2.3
+  
+  # Charts
+  fl_chart: ^0.68.0
+  
+  # PDF Generation
+  pdf: ^3.11.1
+  printing: ^5.13.1
+  
+  # UI
+  cupertino_icons: ^1.0.8
+  intl: ^0.19.0
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
