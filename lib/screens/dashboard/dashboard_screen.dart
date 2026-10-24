@@ -168,7 +168,7 @@ class _HomeTab extends StatelessWidget {
                   const SizedBox(height: 12),
                   _BalanceCard(),
                   const SizedBox(height: 12),
-                  _DateRangeFilter(),
+                  const _DateRangeFilter(),
                   const SizedBox(height: 16),
                   _QuickActions(),
                   const SizedBox(height: 20),
@@ -257,34 +257,57 @@ class _HomeTab extends StatelessWidget {
 }
 
 // ============================================================
-// DATE RANGE FILTER
-// DIPERBAIKI: hapus locale: const Locale('id', 'ID') — penyebab crash
+// DATE RANGE FILTER — 2 tombol terpisah (showDatePicker biasa)
 // ============================================================
-class _DateRangeFilter extends StatelessWidget {
-  Future<void> _pickDateRange(BuildContext context) async {
+class _DateRangeFilter extends StatefulWidget {
+  const _DateRangeFilter();
+
+  @override
+  State<_DateRangeFilter> createState() => _DateRangeFilterState();
+}
+
+class _DateRangeFilterState extends State<_DateRangeFilter> {
+  Future<void> _pickStartDate() async {
     final fp = context.read<FinanceProvider>();
-    final picked = await showDateRangePicker(
+    final picked = await showDatePicker(
       context: context,
+      initialDate: fp.startDate,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-      initialDateRange: DateTimeRange(
-        start: fp.startDate,
-        end: fp.endDate,
-      ),
-      // DIPERBAIKI: locale dihapus agar tidak crash di HP tanpa locale id_ID
+      lastDate: fp.endDate,
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: const ColorScheme.light(
             primary: AppTheme.deepBlue,
             onPrimary: Colors.white,
-            surface: Colors.white,
           ),
         ),
         child: child!,
       ),
     );
     if (picked != null) {
-      fp.setDateRange(picked.start, picked.end);
+      fp.setDateRange(picked, fp.endDate);
+    }
+  }
+
+  Future<void> _pickEndDate() async {
+    final fp = context.read<FinanceProvider>();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: fp.endDate,
+      firstDate: fp.startDate,
+      lastDate: DateTime.now(),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: AppTheme.deepBlue,
+            onPrimary: Colors.white,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      fp.setDateRange(fp.startDate, picked);
     }
   }
 
@@ -292,61 +315,116 @@ class _DateRangeFilter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<FinanceProvider>(
       builder: (context, fp, _) {
-        return GestureDetector(
-          onTap: () => _pickDateRange(context),
-          child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppTheme.medGrey),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 6,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.date_range_rounded,
-                  color: AppTheme.deepBlue,
-                  size: 20,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
+        return Row(
+          children: [
+            // Tombol Tanggal Mulai
+            Expanded(
+              child: GestureDetector(
+                onTap: _pickStartDate,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppTheme.medGrey),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Periode',
+                        'Dari',
                         style: TextStyle(
                           fontSize: 10,
                           color: AppTheme.darkGrey,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      Text(
-                        AppUtils.filterLabel(fp.startDate, fp.endDate),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.deepBlue,
-                        ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_today_rounded,
+                              color: AppTheme.deepBlue, size: 14),
+                          const SizedBox(width: 6),
+                          Text(
+                            AppUtils.formatDateDisplay(fp.startDate),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.deepBlue,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppTheme.darkGrey,
-                  size: 20,
-                ),
-              ],
+              ),
             ),
-          ),
+
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Icon(Icons.arrow_forward_rounded,
+                  color: AppTheme.darkGrey, size: 18),
+            ),
+
+            // Tombol Tanggal Selesai
+            Expanded(
+              child: GestureDetector(
+                onTap: _pickEndDate,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppTheme.medGrey),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Sampai',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: AppTheme.darkGrey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_today_rounded,
+                              color: AppTheme.deepBlue, size: 14),
+                          const SizedBox(width: 6),
+                          Text(
+                            AppUtils.formatDateDisplay(fp.endDate),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.deepBlue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
